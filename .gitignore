@@ -1,5 +1,7 @@
 # Package Json
 package-lock.json
+[0-9]*.js
+ping
 
 # Logs
 logs

@@ -15,7 +15,8 @@ This project is a summary of this back-end trimester. This project will provide 
 Read or watch:
 * [Redis](https://redis.io/docs/getting-started/)
 * [Redis client interface](https://redis.io/docs/ui/cli/)
-* [Redis client for Node JS](https://github.com/redis/node-redis)
+* [Redis client for Node JS V4.x](https://github.com/redis/node-redis)
+* [Redis client for Node JS V3.x](https://github.com/redis/node-redis/tree/v3.1.2)
 * [Bull](https://github.com/OptimalBits/bull)
 * [The Complete Redis Backup Guide (with examples)](https://simplebackups.com/blog/the-complete-redis-backup-guide-with-examples/)
 * [How to Test NodeJS Apps using Mocha, Chai and Sinon JS](https://www.digitalocean.com/community/tutorials/how-to-test-nodejs-apps-using-mocha-chai-and-sinonjs)
