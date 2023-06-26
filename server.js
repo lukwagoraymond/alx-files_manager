@@ -5,7 +5,7 @@ const PORT = process.env.PORT || 5000;
 
 const app = express();
 
-// Middleware
+// Middleware to decode JSON data incoming requests
 app.use(express.json());
 
 // routes
