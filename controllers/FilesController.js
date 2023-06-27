@@ -50,7 +50,7 @@ module.exports.postUpload = async (req, res) => {
     name,
     userId,
     type,
-    parentId: parentId ? ObjectId(parentId) : 0,
+    parentId: parentId ? ObjectId(parentId) : '0',
     isPublic: isPublic || false,
   };
   if (type === 'folder') {
@@ -131,39 +131,48 @@ module.exports.getIndex = async (req, res) => {
     return;
   }
   userId = user._id;
-  let { parentId } = req.query.parentId || 0;
-  if (parentId === '0') parentId = 0;
+  const { parentId } = req.query;
+  let parentIdVal = req.query.parentId;
+  if (parentIdVal === '0') parentIdVal = 0;
   let page = Number(req.query.page) || 0;
   if (Number.isNaN(page)) page = 0;
 
-  if (req.query === {}) {
-    const listFiles = await dbClient.filesCollection.find({})
+  /* if (Object.keys(req.query).length === 0) {
+    const listFiles = await dbClient.filesCollection.find({},
+      {
+        projection: {
+          id: '$_id',
+          _id: 0,
+          name: 1,
+          type: 1,
+          isPublic: 1,
+          parentId: 1,
+          userId: 1,
+        },
+      })
       .skip(20 * page)
       .limit(20)
       .toArray();
-    res.status(200).json({ ...listFiles });
+    res.status(200).send(listFiles);
     return;
-  }
+  } */
+  let filter;
   if (parentId) {
-    let fileDocuments = await dbClient.filesCollection.find({ parentId: ObjectId(parentId) });
-    if (!fileDocuments || fileDocuments.type !== 'folder') {
-      res.status(200).send([]);
-      return;
-    }
-    if (fileDocuments) {
-      fileDocuments = await dbClient.filesCollection.aggregate(
-        [
-          { $match: { parentId } },
-          { $skip: 20 * page },
-          { $limit: 20 },
-          {
-            $project: {
-              id: '$_id', _id: 0, name: 1, type: 1, isPublic: 1, parentId: 1, userId: 1,
-            },
-          },
-        ],
-      ).toArray();
-      res.status(200).json({ ...fileDocuments });
-    }
+    filter = { parentId: ObjectId(parentIdVal) };
+  } else {
+    filter = {};
   }
+  const fileDocuments = await dbClient.filesCollection.aggregate(
+    [
+      { $match: { $or: [filter, { parentId: 0 }] } },
+      { $skip: 20 * page },
+      { $limit: 20 },
+      {
+        $project: {
+          id: '$_id', _id: 0, name: 1, type: 1, isPublic: 1, parentId: 1, userId: 1,
+        },
+      },
+    ],
+  ).toArray();
+  res.status(200).send(fileDocuments);
 };
