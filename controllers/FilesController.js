@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-return */
 import { ObjectId } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
@@ -112,8 +113,11 @@ module.exports.getShow = async (req, res) => {
   );
   if (!fileDocument) {
     res.status(404).json({ error: 'Not found' });
-  } else {
+    return;
+  }
+  if (fileDocument) {
     res.status(200).json({ ...fileDocument });
+    return;
   }
 };
 
@@ -136,26 +140,6 @@ module.exports.getIndex = async (req, res) => {
   if (parentIdVal === '0') parentIdVal = 0;
   let page = Number(req.query.page) || 0;
   if (Number.isNaN(page)) page = 0;
-
-  /* if (Object.keys(req.query).length === 0) {
-    const listFiles = await dbClient.filesCollection.find({},
-      {
-        projection: {
-          id: '$_id',
-          _id: 0,
-          name: 1,
-          type: 1,
-          isPublic: 1,
-          parentId: 1,
-          userId: 1,
-        },
-      })
-      .skip(20 * page)
-      .limit(20)
-      .toArray();
-    res.status(200).send(listFiles);
-    return;
-  } */
   let filter;
   if (parentId) {
     filter = { parentId: ObjectId(parentIdVal) };
@@ -175,4 +159,88 @@ module.exports.getIndex = async (req, res) => {
     ],
   ).toArray();
   res.status(200).send(fileDocuments);
+};
+
+module.exports.putPublish = async (req, res) => {
+  const token = req.header('X-Token');
+  const key = `auth_${token}`;
+  let userId = await redisClient.get(key);
+  if (!userId) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+  const user = await dbClient.usersCollection.findOne({ _id: ObjectId(userId) });
+  if (!user) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+  userId = user._id;
+  const update = {
+    $set: {
+      isPublic: true,
+    },
+  };
+  const fileDocument = await dbClient.filesCollection.findOneAndUpdate(
+    {
+      _id: ObjectId(req.params.id), userId: ObjectId(userId),
+    }, update,
+    {
+      projection: {
+        id: '$_id',
+        _id: 0,
+        name: 1,
+        type: 1,
+        isPublic: 1,
+        parentId: 1,
+        userId: 1,
+      },
+    },
+  );
+  if (!fileDocument) {
+    res.status(404).json({ error: 'Not found' });
+  } else {
+    res.status(200).send({ ...fileDocument.value, isPublic: true });
+  }
+};
+
+module.exports.putUnpublish = async (req, res) => {
+  const token = req.header('X-Token');
+  const key = `auth_${token}`;
+  let userId = await redisClient.get(key);
+  if (!userId) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+  const user = await dbClient.usersCollection.findOne({ _id: ObjectId(userId) });
+  if (!user) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+  userId = user._id;
+  const update = {
+    $set: {
+      isPublic: false,
+    },
+  };
+  const fileDocument = await dbClient.filesCollection.findOneAndUpdate(
+    {
+      _id: ObjectId(req.params.id), userId: ObjectId(userId),
+    }, update,
+    {
+      projection: {
+        id: '$_id',
+        _id: 0,
+        name: 1,
+        type: 1,
+        isPublic: 1,
+        parentId: 1,
+        userId: 1,
+      },
+    },
+  );
+  if (!fileDocument) {
+    res.status(404).json({ error: 'Not found' });
+  } else {
+    res.status(200).send({ ...fileDocument.value, isPublic: false });
+  }
 };
