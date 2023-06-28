@@ -53,7 +53,7 @@ module.exports.postUpload = async (req, res) => {
     name,
     userId,
     type,
-    parentId: parentId ? ObjectId(parentId) : '0',
+    parentId: parentId ? ObjectId(parentId) : 0,
     isPublic: isPublic || false,
   };
   if (type === 'folder') {
