@@ -25,7 +25,9 @@ module.exports.getConnect = async (req, res) => {
       const expirationHours = 24;
       await redisClient.set(key, user._id.toString(), expirationHours * 3600);
       res.status(200).json({ token });
-    } else {
+      return;
+    }
+    if (!user) {
       res.status(401).json({ error: 'Unauthorized' });
     }
   }
