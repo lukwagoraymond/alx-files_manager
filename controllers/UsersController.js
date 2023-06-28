@@ -34,6 +34,9 @@ module.exports.getMe = async (req, res) => {
   const key = `auth_${token}`;
   try {
     const userId = await redisClient.get(key);
+    if (!userId) {
+      res.status(401).json({ error: 'Unauthorized' });
+    }
     const user = await dbClient.usersCollection.findOne({ _id: ObjectId(userId) });
     if (user) {
       res.status(200).json({ id: user._id, email: user.email });
