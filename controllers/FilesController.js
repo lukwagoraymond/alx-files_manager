@@ -20,7 +20,7 @@ module.exports.postUpload = async (req, res) => {
     res.status(401).json({ error: 'Unauthorized' });
     return;
   }
-  userId = user._id;
+  userId = user._id.toString();
   const {
     name, type, isPublic = false, data,
   } = req.body;
