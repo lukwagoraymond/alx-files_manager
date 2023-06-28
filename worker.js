@@ -38,3 +38,17 @@ queue.process(async (job, done) => {
   });
   done();
 });
+
+const queue2 = new Queue('userQueue');
+queue2.process(async (job, done) => {
+  const { userId } = job.data;
+  if (!userId) {
+    throw new Error('Missing userId');
+  }
+  const user = await dbClient.usersCollection.findOne({ _id: ObjectId(userId) });
+  if (!user) {
+    throw new Error('User not found');
+  }
+  console.log(`Welcome ${user.email}`);
+  done();
+});

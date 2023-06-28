@@ -1,4 +1,5 @@
 import sha1 from 'sha1';
+import Queue from 'bull';
 import { ObjectId } from 'mongodb';
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
@@ -20,6 +21,8 @@ module.exports.postNew = async (req, res) => {
   let user;
   try {
     user = await dbClient.usersCollection.insertOne({ email, password: hashedPwd });
+    const queue = new Queue('userQueue');
+    queue.add({ userId: user.insertedId });
     return res.status(201).json({ id: user.insertedId, email });
   } catch (err) {
     return res.status(500).json({ error: 'Error can\'t create user' });
