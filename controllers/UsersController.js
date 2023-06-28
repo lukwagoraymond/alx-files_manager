@@ -39,7 +39,7 @@ module.exports.getMe = async (req, res) => {
     }
     const user = await dbClient.usersCollection.findOne({ _id: ObjectId(userId) });
     if (user) {
-      res.status(200).json({ id: user.insertedId, email: user.email });
+      res.status(200).json({ id: user._id.toString(), email: user.email });
     } else res.status(401).json({ error: 'Unauthorized' });
   } catch (err) {
     res.status(401).json({ error: 'Unauthorized' });
