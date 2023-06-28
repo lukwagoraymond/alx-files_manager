@@ -79,7 +79,12 @@ module.exports.postUpload = async (req, res) => {
       ...fileDocument,
       localPath: fullPath,
     });
-    res.status(201).json({ id: newFile.insertedId, ...fileDocument });
+    res.status(201).json({
+      id: newFile.insertedId,
+      ...fileDocument,
+      localPath: newFile.localPath,
+    });
+    // res.status(201).json({ id: newFile.insertedId, ...fileDocument });
     if (type === 'image') {
       const queue = new Queue('fileQueue');
       queue.add({ fileId: newFile.insertedId, userId });
